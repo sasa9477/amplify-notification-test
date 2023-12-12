@@ -1,7 +1,22 @@
 import Image from 'next/image'
 import styles from './page.module.css'
+import { Client, isFullPageOrDatabase } from "@notionhq/client"
 
-export default function Home() {
+export default async function Home() {
+// Initializing a client
+const notion = new Client({
+  auth: process.env.NOTION_TOKEN,
+})
+const data = await notion.databases.query({
+  database_id: "39c065dca9ee41579c76b63ee65a2e61"
+})
+const properties = data.results.map((page) => isFullPageOrDatabase(page) && page.properties)
+if (properties.some((property) => (property as any).buildResult.select.name === "failed")) {
+  throw new Error("Build failed")
+}
+
+console.log(properties)
+
   return (
     <main className={styles.main}>
       <div className={styles.description}>
